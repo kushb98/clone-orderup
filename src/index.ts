@@ -11,6 +11,9 @@ mongoose
 		mongoose.connection.on('disconnected', () => {
 			console.log('Database disconneted!!');
 		});
+		mongoose.connection.on('reconnected', () => {
+			console.log('Database reconnecting!');
+		});
 
 		app.listen(env.PORT || 5000, () => {
 			console.log('Application running on ' + `http://localhost:${env.PORT}`);

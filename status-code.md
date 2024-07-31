@@ -1,4 +1,4 @@
-# HTTP status codes typically used for the various HTTP methods:
+# HTTP status codes typically used for the various HTTP methods
 
 ## Create (POST)
 

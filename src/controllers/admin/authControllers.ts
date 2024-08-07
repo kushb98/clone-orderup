@@ -1,5 +1,5 @@
 import { Request, Response } from 'express-serve-static-core';
-import authDAO from '../../dao/authDao'; // Adjust the path to where your authDAO is located
+import authDAO from '../../dao/authDao'; 
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express-serve-static-core';
-import authDAO from '../../dao/authDao'; 
+import adminService from '../../services/adminService'; 
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 
@@ -9,7 +9,7 @@ export const loginController = async (req: Request, res: Response) => {
 	  const { username, password } = req.body;
   
 	  // DB call to find the user
-	  const user = await authDAO.findAdminByUsername(username);
+	  const user = await adminService.findAdminByUsername(username);
   
     // Check if user is found and password is present
     if (!user || !user.password) {

@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import Admin from '../models/admin/adminModel';
 
-const authDAO = {
+const adminService = {
 
   // Find an admin by username
   async findAdminByUsername(username: string) {
@@ -23,4 +23,4 @@ const authDAO = {
   }
 };
 
-export default authDAO;
+export default adminService;

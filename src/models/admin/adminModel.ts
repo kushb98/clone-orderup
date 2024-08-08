@@ -1,5 +1,5 @@
 import { timeStamp } from 'console';
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Collection } from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
 
@@ -53,7 +53,7 @@ const AdminSchema: Schema = new Schema(
 			select: false,
 		},
 	},
-	{ timestamps: true }
+	{timestamps: true },
 );
 
 

@@ -1,5 +1,7 @@
 import { Request, Response } from 'express-serve-static-core';
 import Admin from '../../models/admin/adminModel';
+import nodemailer from 'nodemailer';
+import env from '../../utils/validateEnv';
 
 export const loginController = (req: Request, res: Response) => {
 	res.status(200).json({ success: true, message: 'Loggedin!!' });
@@ -35,6 +37,24 @@ export const addAdminController = async (req: Request, res: Response) => {
 
 		await adminUser.save();
 
+		// Configuration for Mailtrap transporter
+		const transporter = nodemailer.createTransport({
+			host: env.MAILTRAP_HOST,
+			port: env.MAILTRAP_PORT,
+			auth: {
+			  user: env.MAILTRAP_USER,
+			  pass: env.MAILTRAP_PASS
+			}
+		  });
+	  
+		  const mailOptions = {
+			from: 'no-reply@yourapp.com',
+			to: adminUser.email,
+			subject: 'Account Created',
+			text: `Hi ${adminUser.firstname},\n\nYour account has been created.\n\nUsername: ${adminUser.username}\n\n Password: ${password}\n\nThanks.`
+		  };
+	  
+		  await transporter.sendMail(mailOptions);
 
 		res.status(201).json({
 			success: true,

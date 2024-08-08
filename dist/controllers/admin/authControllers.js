@@ -14,6 +14,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.addAdminController = exports.refreshTokenController = exports.resetController = exports.forgotController = exports.logoutController = exports.loginController = void 0;
 const adminModel_1 = __importDefault(require("../../models/admin/adminModel"));
+const nodemailer_1 = __importDefault(require("nodemailer"));
+const validateEnv_1 = __importDefault(require("../../utils/validateEnv"));
 const loginController = (req, res) => {
     res.status(200).json({ success: true, message: 'Loggedin!!' });
 };
@@ -49,6 +51,22 @@ const addAdminController = (req, res) => __awaiter(void 0, void 0, void 0, funct
             password
         });
         yield adminUser.save();
+        // Configuration for Mailtrap transporter
+        const transporter = nodemailer_1.default.createTransport({
+            host: validateEnv_1.default.MAILTRAP_HOST,
+            port: validateEnv_1.default.MAILTRAP_PORT,
+            auth: {
+                user: validateEnv_1.default.MAILTRAP_USER,
+                pass: validateEnv_1.default.MAILTRAP_PASS
+            }
+        });
+        const mailOptions = {
+            from: 'no-reply@yourapp.com',
+            to: adminUser.email,
+            subject: 'Account Created',
+            text: `Hi ${adminUser.firstname},\n\nYour account has been created.\n\nUsername: ${adminUser.username}\n\n Password: ${password}\n\nThanks.`
+        };
+        yield transporter.sendMail(mailOptions);
         res.status(201).json({
             success: true,
             message: 'Admin created and email sent!',

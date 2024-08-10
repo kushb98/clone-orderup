@@ -2,11 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import env from '../utils/validateEnv';
-
-interface JwtPayload {
-  id: string;
-  role: string;
-}
+import { JwtPayload } from '../types/jwtPayload';
 
 // Authenticate JWT token
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {

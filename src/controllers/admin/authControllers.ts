@@ -1,7 +1,7 @@
 import { Request, Response } from 'express-serve-static-core';
 import Admin from '../../models/admin/adminModel';
-import nodemailer from 'nodemailer';
 import env from '../../utils/validateEnv';
+import { sendEmail } from '../../utils/email';
 
 export const loginController = (req: Request, res: Response) => {
 	res.status(200).json({ success: true, message: 'Loggedin!!' });
@@ -24,6 +24,24 @@ export const refreshTokenController = (req: Request, res: Response) => {
 export const addAdminController = async (req: Request, res: Response) => {
 	// res.status(200).json({ success: true, message: 'admin created!!' });
 	try {
+		const requiredFields = ['firstname', 'lastname', 'email', 'username', 'role', 'password'];
+		const missingFields: string[] = [];
+
+		// Find missing fields
+		for (const field of requiredFields) {
+			if (!req.body[field]) {
+				missingFields.push(field);
+			}
+		}
+
+		// If there are missing fields, send an error response
+		if (missingFields.length > 0) {
+			return res.status(400).json({
+				success: false,
+				message: `The following fields are required: ${missingFields.join(', ')}`
+			});
+		}
+
 		const { firstname, lastname, email, username, role, password } = req.body;
 
 		const adminUser = new Admin({
@@ -37,33 +55,26 @@ export const addAdminController = async (req: Request, res: Response) => {
 
 		await adminUser.save();
 
-		// Configuration for Mailtrap transporter
-		const transporter = nodemailer.createTransport({
-			host: env.MAILTRAP_HOST,
-			port: env.MAILTRAP_PORT,
-			auth: {
-			  user: env.MAILTRAP_USER,
-			  pass: env.MAILTRAP_PASS
-			}
-		  });
-	  
-		  const mailOptions = {
-			from: 'no-reply@yourapp.com',
-			to: adminUser.email,
-			subject: 'Account Created',
-			text: `Hi ${adminUser.firstname},\n\nYour account has been created.\n\nUsername: ${adminUser.username}\n\n Password: ${password}\n\nThanks.`
-		  };
-	  
-		  await transporter.sendMail(mailOptions);
+		await sendEmail(
+			adminUser.email,
+			'Account Login Details',
+			`Hi ${adminUser.firstname},\n\n
+			Your account has been created.\n\n
+			Username: ${adminUser.username}\n\n
+			Password: ${password}\n\n
+			You can log in to your account using the following link:\n\n
+			http://localhost:${env.PORT}/api/v1/auth/orderup/login\n\n
+			Thanks.`
+		);
 
 		res.status(201).json({
 			success: true,
 			message: 'Admin created and email sent!',
 			adminUser: {
-			  _id: adminUser._id,
-			  email: adminUser.email
+				_id: adminUser._id,
+				email: adminUser.email
 			}
-		  });
+		});
 
 	} catch (error: any) {
 		res.status(500).json({ success: false, message: error.message });

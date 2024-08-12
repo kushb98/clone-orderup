@@ -266,7 +266,7 @@ status: `200 OK`
 
 Add new administrator, send new admin an email about their account.
 
-endpoint: `/api/v1/auth/orderup-owener/add-tm-new`
+endpoint: `/api/v1/auth/orderup-owner/add-tm-new`
 
 Authentication: `YES`
 

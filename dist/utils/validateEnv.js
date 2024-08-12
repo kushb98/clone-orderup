@@ -10,5 +10,9 @@ const env = (0, envalid_1.cleanEnv)(process.env, {
     PORT: (0, envalid_1.port)(),
     JWT_SECRET: (0, envalid_1.str)(),
     JWT_EXPIRES_IN: (0, envalid_1.str)(),
+    MAILTRAP_HOST: (0, envalid_1.str)(),
+    MAILTRAP_PORT: (0, envalid_1.port)(),
+    MAILTRAP_USER: (0, envalid_1.str)(),
+    MAILTRAP_PASS: (0, envalid_1.str)()
 });
 exports.default = env;

@@ -9,7 +9,7 @@ mongoose
 	.then(() => {
 		console.log('Database connected!');
 		mongoose.connection.on('disconnected', () => {
-			console.log('Database disconneted!!');
+			console.log('Database disconnected!!');
 		});
 		mongoose.connection.on('reconnected', () => {
 			console.log('Database reconnecting!');

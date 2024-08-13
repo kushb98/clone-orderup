@@ -12,7 +12,7 @@ mongoose_1.default
     .then(() => {
     console.log('Database connected!');
     mongoose_1.default.connection.on('disconnected', () => {
-        console.log('Database disconneted!!');
+        console.log('Database disconnected!!');
     });
     mongoose_1.default.connection.on('reconnected', () => {
         console.log('Database reconnecting!');

@@ -8,6 +8,11 @@ export const loginController = async (req: Request, res: Response) => {
 	  // Extract username and password
 	  const { username, password } = req.body;
   
+	  // Check if username and password are provided
+	  if (!username || !password) {
+		return res.status(400).json({ success: false, message: 'Username and password are required' });
+	  }
+  
 	  // DB call to find the user
 	  const user = await adminService.findAdminByUsername(username);
   
@@ -15,6 +20,7 @@ export const loginController = async (req: Request, res: Response) => {
     if (!user || !user.password) {
 		return res.status(401).json({ success: false, message: 'Invalid username or password' });
 	  }
+  
 	  // Assuming password is hashed using bcrypt
 	  const isPasswordValid = await bcrypt.compare(password, user.password);
   
@@ -39,12 +45,15 @@ export const loginController = async (req: Request, res: Response) => {
 export const logoutController = (req: Request, res: Response) => {
 	res.status(200).json({ success: true, message: 'Logged out!!' });
 };
+
 export const forgotController = (req: Request, res: Response) => {
 	res.status(200).json({ success: true, message: 'Forgot controller!!' });
 };
+
 export const resetController = (req: Request, res: Response) => {
 	res.status(200).json({ success: true, message: 'reset pass controller!!' });
 };
+
 export const refreshTokenController = (req: Request, res: Response) => {
 	res
 		.status(200)

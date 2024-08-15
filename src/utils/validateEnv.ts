@@ -9,6 +9,10 @@ const env = cleanEnv(process.env, {
 	PORT: port(),
 	JWT_SECRET: str(),
 	JWT_EXPIRES_IN: str(),
+	MAILTRAP_HOST: str(),
+	MAILTRAP_PORT: port(),
+	MAILTRAP_USER: str(),
+	MAILTRAP_PASS: str()
 });
 
 export default env;

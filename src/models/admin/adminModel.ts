@@ -1,9 +1,21 @@
 import { timeStamp } from 'console';
-import mongoose from 'mongoose';
+import mongoose, { Schema, Document, Collection } from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
 
-const adminSchema = new mongoose.Schema(
+
+export interface AdminDocument extends Document {
+	firstname: string;
+	lastname: string;
+	email: string;
+	username: string;
+	role: string;
+	password: string;
+	comparePassword(candidatePassword: string): Promise<boolean>;
+}
+
+// Define Admin schema to save to DB
+const AdminSchema: Schema = new Schema(
 	{
 		firstname: {
 			type: String,
@@ -41,8 +53,22 @@ const adminSchema = new mongoose.Schema(
 			select: false,
 		},
 	},
-	{ timestamps: true }
+	{timestamps: true },
 );
 
-const adminModel = mongoose.model('Admin', adminSchema);
+
+// Hash password before saving it into DB
+AdminSchema.pre<AdminDocument>('save', async function (next) {
+	if (!this.isModified('password')) return next();
+	const salt = await bcrypt.genSalt(10);
+	this.password = await bcrypt.hash(this.password, salt);
+	next();
+});
+
+// Compare password hash to check if password matches
+AdminSchema.methods.comparePassword = function (candidatePassword: string): Promise<boolean> {
+	return bcrypt.compare(candidatePassword, this.password);
+};
+
+const adminModel = mongoose.model<AdminDocument>('Admin', AdminSchema);
 export default adminModel;

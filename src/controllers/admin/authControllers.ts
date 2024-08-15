@@ -7,6 +7,7 @@ import bcrypt from 'bcryptjs'
 import Admin from '../../models/admin/adminModel';
 import env from '../../utils/validateEnv';
 import { sendEmail } from '../../utils/email';
+import jwt from 'jsonwebtoken';
 
 
 export const loginController = async (req: Request, res: Response) => {
@@ -48,8 +49,42 @@ export const loginController = async (req: Request, res: Response) => {
 	}
 };
 
+const blacklist = new Set<string>();
+
 export const logoutController = (req: Request, res: Response) => {
-	res.status(200).json({ success: true, message: 'Logged out!!' });
+	try {
+        // 1. Extract the token from the Authorization header
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ success: false, message: 'No token provided' });
+        }
+
+        if (token == null) return res.sendStatus(401);
+        if (blacklist.has(token)) {
+            return res.status(401).json({ success: false, message: 'Invalid token' });
+        }
+        // 2. Verify the token
+        jwt.verify(token, process.env.JWT_SECRET as string, (err, String) => {
+            if (err) {
+                console.log(err);
+                return res.status(401).json({ success: false, message: 'Invalid token' });
+            }
+
+            // 3. Simulate token invalidation (in this case, clear the token on the client side)
+            // Optionally, you could implement token blacklisting here
+            blacklist.add(token);
+            res.status(200).json({
+                success: true,
+                message: 'Logged out successfully',
+                token: null, 
+            });
+
+        });
+    } catch (error) {
+        console.error('Logout error:', error);
+        res.status(500).json({ success: false, message: 'An error occurred during logout' });
+    }
 };
 
 export const forgotController = (req: Request, res: Response) => {

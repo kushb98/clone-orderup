@@ -1,5 +1,5 @@
 import { timeStamp } from 'console';
-import mongoose from 'mongoose';
+import mongoose, { Schema, Document, Collection } from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
@@ -19,79 +19,76 @@ interface IAdmin extends Document {
 }
 
 
-const adminSchema = new mongoose.Schema(
-	{
-		firstname: {
-			type: String,
-			trim: true,
-		},
-		lastname: {
-			type: String,
-			trim: true,
-		},
-		username: {
-			type: String,
-			required: [true, 'Username is required to login'],
-			minLength: [8, 'Username is too short'],
-			unique: [true, 'User with this username already exist'],
-		},
-		roles: {
-			type: String,
-			enum: {
-				values: ['admin', 'manager'],
-				message: '{VALUE} is not supported',
-			},
-			default: 'manager',
-		},
-		email: {
-			type: String,
-			validate: {
-				validator: validator.isEmail,
-				message: 'Please provide valid email',
-			},
-		},
 
-		password: {
-			type: String,
-			minLength: [8, 'Password is too short'],
-			select: false,
-		},
-		resetControllerToken: String,
+// Define AdminDocument interface, extending from IAdmin
+export interface AdminDocument extends IAdmin {
+    comparePassword(candidatePassword: string): Promise<boolean>;
+}
+
+// Define the Admin schema to save to DB
+const AdminSchema: Schema = new Schema(
+    {
+        firstname: {
+            type: String,
+            trim: true,
+        },
+        lastname: {
+            type: String,
+            trim: true,
+        },
+        username: {
+            type: String,
+            required: [true, 'Username is required to login'],
+            minLength: [8, 'Username is too short'],
+            unique: [true, 'User with this username already exists'],
+        },
+        roles: {
+            type: String,
+            enum: {
+                values: ['admin', 'manager'],
+                message: '{VALUE} is not supported',
+            },
+            default: 'manager',
+        },
+        email: {
+            type: String,
+            validate: {
+                validator: validator.isEmail,
+                message: 'Please provide a valid email',
+            },
+        },
+        password: {
+            type: String,
+            minLength: [8, 'Password is too short'],
+            select: false,
+        },
+        resetControllerToken: String,
         resetControllerExpire: Date,
-	},
-	{ timestamps: true }
+    },
+    { timestamps: true }
 );
 
-// // Pre-save hook to hash password before saving
-// adminSchema.pre('save', async function (next) {
-//     if (!this.isModified('password')) return next();
-
-//     if (this.password) {
-// 		this.password = await bcrypt.hash(this.password, 12);
-// 	}
-//     next();
-// });
-
-// // Instance method to compare passwords
-// adminSchema.methods.correctPassword = async function (
-//     candidatePassword: string,
-//     userPassword: string
-// ) {
-//     return await bcrypt.compare(candidatePassword, userPassword);
-// };
+// Pre-save hook to hash the password before saving it to the DB
+AdminSchema.pre<IAdmin>('save', async function (next) {
+    if (!this.isModified('password')) return next();
+    if (this.password) {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+    }
+    next();
+});
 
 
 
 // Instance method to compare passwords
-adminSchema.methods.correctPassword = async function (
-    candidatePassword: string,
-    userPassword: string
+AdminSchema.methods.comparePassword = async function (
+    candidatePassword: string
 ): Promise<boolean> {
-    return await bcrypt.compare(candidatePassword, userPassword);
+    return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Instance method to create password reset token
-adminSchema.methods.createPasswordResetToken = function (): string {
+// Instance method to create a password reset token
+AdminSchema.methods.createPasswordResetToken = function (): string {
     const resetToken = crypto.randomBytes(32).toString('hex');
 
     this.resetControllerToken = crypto
@@ -104,6 +101,5 @@ adminSchema.methods.createPasswordResetToken = function (): string {
     return resetToken;
 };
 
-
-const adminModel = mongoose.model('Admin', adminSchema);
+const adminModel = mongoose.model<AdminDocument>('Admin', AdminSchema);
 export default adminModel;

@@ -1,4 +1,4 @@
-import express from 'express';
+import express from "express";
 import {
 	addAdminController,
 	forgotController,
@@ -8,6 +8,8 @@ import {
 	resetController,
 	changePasswordController
 } from '../../controllers/admin/authControllers';
+import { authenticateToken, authorizeRoles } from "../../middleware/auth";
+
 /****
  * @function adminRouter() creates an express router so we can access the HTTP methods
  *
@@ -21,4 +23,10 @@ adminRouter.post('/orderup/reset-password/:token', resetController);
 adminRouter.post('/orderup/reset-password', resetController);
 adminRouter.post('/orderup/change-password', changePasswordController);
 adminRouter.post('/orderup/login/refresh-token', refreshTokenController);
-adminRouter.post('/orderup-owner/add-tm-new', addAdminController);
+adminRouter.post(
+	"/orderup-owner/add-tm-new",
+	authenticateToken,
+	authorizeRoles("admin", "manager"),
+	addAdminController
+);
+
